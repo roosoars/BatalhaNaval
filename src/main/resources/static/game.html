@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Batalha Naval – Partida</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 20px; }
+        .game-info { margin-bottom: 20px; }
+        .message { margin-bottom: 20px; padding: 10px; background: #f0f0f0; border-radius: 5px; }
+        .game-boards { display: flex; justify-content: space-between; }
+        .board { display: grid; grid-template-columns: repeat(10, 30px); grid-gap: 2px; }
+        .cell { width: 30px; height: 30px; background: #e0e0e0; border: 1px solid #999; cursor: pointer; }
+        .ship { background: #666; }
+        .hit  { background: #f44336; }
+        .miss { background: #2196F3; }
+    </style>
+</head>
+<body>
+<div class="game-info">
+    <h1>Partida <span id="gid"></span></h1>
+    <p>Jogador 1: <span id="p1"></span> <span id="p1Status"></span></p>
+    <p>Jogador 2: <span id="p2"></span> <span id="p2Status"></span></p>
+</div>
+<div class="message" id="gameMessage">Carregando partida…</div>
+
+<div class="game-boards">
+    <div>
+        <h3>Seu tabuleiro</h3>
+        <div id="myBoard" class="board"></div>
+    </div>
+    <div>
+        <h3>Tabuleiro oponente</h3>
+        <div id="opponentBoard" class="board"></div>
+    </div>
+</div>
+
+<button onclick="placeShipsRandomly()" id="placeShipsBtn">Posicionar navios aleatoriamente</button>
+<button onclick="refresh()">Atualizar</button>
+
+<script>
+    // captura e valida gameId
+    const qs = new URLSearchParams(location.search);
+    const gameId = qs.get('gameId');
+    console.log('[DEBUG] game.html loaded, gameId =', gameId);
+    document.getElementById('gid').textContent = gameId || '(nenhum)';
+
+    if (!gameId) {
+        document.getElementById('gameMessage').textContent = 'Erro: gameId não especificado. Volte ao lobby.';
+        throw new Error('gameId missing');
+    }
+
+    // estado do jogo
+    let gameState = null, myShips = [], myShots = [], opponentShots = [];
+
+    // monta tabuleiros
+    function initBoards() {
+        ['myBoard','opponentBoard'].forEach(id => {
+            const board = document.getElementById(id);
+            board.innerHTML = '';
+            for (let i=0;i<100;i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.dataset.idx = i;
+                if (id==='opponentBoard') {
+                    cell.onclick = () => makeMove(i);
+                }
+                board.appendChild(cell);
+            }
+        });
+    }
+
+    function refresh() {
+        fetch(`/api/game/${gameId}`)
+            .then(r => r.json())
+            .then(g => {
+                gameState = g;
+                document.getElementById('p1').textContent = g.player1Id;
+                document.getElementById('p2').textContent = g.player2Id || '— aguardando —';
+                document.getElementById('p1Status').textContent = (g.player1Id===localStorage.getItem('userId')?'(Você)':'');
+                document.getElementById('p2Status').textContent = (g.player2Id===localStorage.getItem('userId')?'(Você)':'');
+
+                if (!g.player2Id) {
+                    gameMessage('Aguardando oponente…');
+                } else if (myShips.length===0) {
+                    gameMessage('Posicione seus navios!');
+                } else {
+                    gameMessage('Partida em andamento!');
+                }
+            })
+            .catch(e => console.error('[ERROR] refresh', e));
+    }
+
+    function gameMessage(txt) {
+        document.getElementById('gameMessage').textContent = txt;
+    }
+
+    function placeShipsRandomly() {
+        myShips = [];
+        const types = [{t:'carrier',l:5},{t:'battleship',l:4},{t:'cruiser',l:3},{t:'submarine',l:3},{t:'destroyer',l:2}];
+        types.forEach(ship=> {
+            let ok=false;
+            while(!ok){
+                const hor = Math.random()>0.5;
+                const x = Math.floor(Math.random()*(hor?11-ship.l:10));
+                const y = Math.floor(Math.random()*(hor?10:11-ship.l));
+                const s={x,y,length:ship.l,isHorizontal:hor};
+                if (!myShips.some(e=>overlap(e,s))) {
+                    myShips.push(s);
+                    ok=true;
+                }
+            }
+        });
+        updateMyBoard();
+        document.getElementById('placeShipsBtn').disabled = true;
+        gameMessage('Navios posicionados! Faça sua jogada.');
+    }
+
+    function overlap(a,b){
+        const ca=[], cb=[];
+        for(let i=0;i<a.length;i++){
+            ca.push(a.isHorizontal?[a.x+i,a.y]:[a.x,a.y+i]);
+        }
+        for(let i=0;i<b.length;i++){
+            cb.push(b.isHorizontal?[b.x+i,b.y]:[b.x,b.y+i]);
+        }
+        return ca.some(c1=>cb.some(c2=>c1[0]===c2[0]&&c1[1]===c2[1]));
+    }
+
+    function updateMyBoard(){
+        document.querySelectorAll('#myBoard .cell').forEach(cell=>{
+            cell.className='cell';
+        });
+        myShips.forEach(ship=>{
+            for(let i=0;i<ship.length;i++){
+                const idx = ship.isHorizontal?ship.y*10+ship.x+i:(ship.y+i)*10+ship.x;
+                document.querySelector(`#myBoard .cell[data-idx='${idx}']`).classList.add('ship');
+            }
+        });
+        opponentShots.forEach(idx=>{
+            document.querySelector(`#myBoard .cell[data-idx='${idx}']`).classList.add(isShip(idx)?'hit':'miss');
+        });
+    }
+
+    function makeMove(idx) {
+        if (!gameState.player2Id) { gameMessage('Aguardando oponente…'); return; }
+        if (myShots.includes(idx)) { gameMessage('Já atirou aqui!'); return; }
+
+        myShots.push(idx);
+        const hit = Math.random()>0.7;
+        document.querySelector(`#opponentBoard .cell[data-idx='${idx}']`)
+            .classList.add(hit?'hit':'miss');
+        gameMessage(hit?'Acertou!':'Água!');
+
+        // simula resposta oponente
+        setTimeout(()=>{
+            const opMove = Math.floor(Math.random()*100);
+            opponentShots.push(opMove);
+            updateMyBoard();
+            gameMessage(overlapShip(opMove)?'Oponente acertou':'Oponente errou');
+        },1000);
+    }
+
+    function isShip(idx){
+        return myShips.some(ship=>{
+            for(let i=0;i<ship.length;i++){
+                const x = ship.isHorizontal?ship.x+i:ship.x;
+                const y = ship.isHorizontal?ship.y:ship.y+i;
+                if (y*10+x===idx) return true;
+            }
+            return false;
+        });
+    }
+
+    initBoards();
+    refresh();
+    setInterval(refresh, 5000);
+</script>
+</body>
+</html>

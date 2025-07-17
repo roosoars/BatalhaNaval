@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Lobby</title>
+</head>
+<body>
+<h1>Lobby — Olá, <span id="user"></span></h1>
+<button onclick="createGame()">Criar Partida</button>
+<h2>Partidas Abertas</h2>
+<ul id="games"></ul>
+
+<script>
+    const userId = localStorage.getItem('userId');
+    const username = localStorage.getItem('username');
+    console.log('[DEBUG] lobby loaded, userId =', userId, 'username =', username);
+
+    if (!userId) {
+        alert('Usuário não autenticado. Redirecionando para login.');
+        window.location = '/login.html';
+    }
+
+    document.getElementById('user').textContent = username;
+
+    function loadOpen() {
+        fetch('/api/game/open')
+            .then(r => r.json())
+            .then(list => {
+                const ul = document.getElementById('games');
+                ul.innerHTML = '';
+                list.forEach(g => {
+                    const li = document.createElement('li');
+                    li.textContent = `${g.gameId} (criado em ${new Date(g.createdAt).toLocaleTimeString()}) `;
+                    const btn = document.createElement('button');
+                    btn.textContent = 'Entrar';
+                    btn.onclick = () => joinGame(g.gameId);
+                    li.appendChild(btn);
+                    ul.appendChild(li);
+                });
+            })
+            .catch(e => console.error('[ERROR] loadOpen', e));
+    }
+
+    function createGame() {
+        fetch(`/api/game/create?player1Id=${userId}`, { method: 'POST' })
+            .then(r => {
+                if (!r.ok) return r.text().then(text => { throw new Error(text) });
+                return r.text();
+            })
+            .then(gameId => {
+                console.log('[DEBUG] createGame retornou gameId =', gameId);
+                window.location = `/game.html?gameId=${gameId}`;
+            })
+            .catch(e => console.error('[ERROR] createGame', e));
+    }
+
+    function joinGame(gameId) {
+        fetch(`/api/game/join?gameId=${gameId}&player2Id=${userId}`, { method: 'POST' })
+            .then(r => {
+                if (!r.ok) return r.text().then(text => { throw new Error(text) });
+                console.log('[DEBUG] joinGame sucesso, redirecionando para', gameId);
+                window.location = `/game.html?gameId=${gameId}`;
+            })
+            .catch(e => console.error('[ERROR] joinGame', e));
+    }
+
+    loadOpen();
+    setInterval(loadOpen, 5000);
+</script>
+</body>
+</html>
