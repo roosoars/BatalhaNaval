@@ -1,4 +1,6 @@
-package battleship.model;
+package battleship.domain;
+
+import java.util.Objects;
 
 public class Coordinate {
     private final int row;
@@ -16,12 +18,12 @@ public class Coordinate {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Coordinate)) return false;
-        Coordinate c = (Coordinate) o;
-        return row == c.row && col == c.col;
+        Coordinate that = (Coordinate) o;
+        return row == that.row && col == that.col;
     }
 
     @Override
     public int hashCode() {
-        return 31 * row + col;
+        return Objects.hash(row, col);
     }
 }
