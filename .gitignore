@@ -36,3 +36,7 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+### FIREBASE ###
+/src/main/resources/serviceAccountKey.json
+/src/main/resources/public/js/firebase-imports.js
