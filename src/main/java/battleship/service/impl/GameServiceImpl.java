@@ -15,7 +15,6 @@ public class GameServiceImpl implements GameService {
         int size = request.getSize();
         this.playerBoard = new Board(size);
         this.computerBoard = new Board(size);
-        // posiciona navios do computador
         for (int len : new int[]{2,3,3,4,5}) {
             Ship ship = shipFactory.create(len);
             computerBoard.placeRandom(ship);

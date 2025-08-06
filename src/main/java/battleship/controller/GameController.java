@@ -11,10 +11,6 @@ public class GameController {
     private static final int DEFAULT_SIZE = 10;
     private final GameService gameService = new GameServiceImpl();
 
-    /**
-     * Inicializa o jogo lendo o parâmetro de query 'size'.
-     * Usa DEFAULT_SIZE quando size não for informado.
-     */
     public Object init(Request req, Response res) {
         String sizeParam = req.queryParams("size");
         int size = DEFAULT_SIZE;
@@ -32,7 +28,6 @@ public class GameController {
     }
 
     public Object placeShip(Request req, Response res) {
-        // Continua desserializando via JSON do corpo da requisição
         PlaceShipRequest dto = JsonUtil.fromJson(req, PlaceShipRequest.class);
         gameService.placePlayerShip(dto);
         res.status(204);

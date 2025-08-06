@@ -1,14 +1,9 @@
-/**
- * Cria um tabuleiro no elemento containerId.
- * handlers: { onDrop?, onClick? }
- */
 export function createBoard(size, containerId, handlers = {}) {
     const { onDrop, onClick } = handlers;
     const container = document.getElementById(containerId);
     container.style.setProperty('--board-size', size);
     container.innerHTML = '';
 
-    // Se onDrop foi passado, habilita drag-and-drop
     if (onDrop) {
         container.addEventListener('dragover', e => e.preventDefault());
         container.addEventListener('drop', e => {
@@ -21,7 +16,6 @@ export function createBoard(size, containerId, handlers = {}) {
         });
     }
 
-    // Cria as células
     for (let r = 0; r < size; r++) {
         for (let c = 0; c < size; c++) {
             const cell = document.createElement('div');
@@ -36,10 +30,6 @@ export function createBoard(size, containerId, handlers = {}) {
     }
 }
 
-/**
- * Gera o card de um navio de comprimento `length`, pronto para arrastar.
- * A orientação atual vem de `dataset.vertical`.
- */
 export function createShipCard(length, id, vertical) {
     const shipEl = document.createElement('div');
     shipEl.classList.add('ship');
@@ -54,7 +44,6 @@ export function createShipCard(length, id, vertical) {
         e.dataTransfer.setData('text', JSON.stringify({ length: len, vertical: vert }));
     });
 
-    // Cada célula do preview
     for (let i = 0; i < length; i++) {
         const cell = document.createElement('div');
         cell.classList.add('cell');

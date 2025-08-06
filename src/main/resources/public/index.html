@@ -2,28 +2,41 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Batalha Naval</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Batalha Naval Autenticada</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-<div id="controls">
-    <button id="flip-button">Flip Navio</button>
-    <button id="start-button" disabled>Start Game</button>
+<div id="auth-container">
+    <h2>Login</h2>
+    <input id="login-email" type="email" placeholder="Email">
+    <input id="login-password" type="password" placeholder="Senha">
+    <button id="login-btn">Entrar</button>
+    <h2>Cadastro</h2>
+    <input id="signup-name" type="text" placeholder="Nome">
+    <input id="signup-email" type="email" placeholder="Email">
+    <input id="signup-password" type="password" placeholder="Senha">
+    <button id="signup-btn">Cadastrar</button>
 </div>
 
-<div id="ship-card" class="ship-card">
-    <h3>Seus Navios</h3>
-    <div id="ships-container">
-        <!-- Navios serão inseridos dinamicamente -->
+<div id="game-container" style="display:none;">
+    <div id="controls">
+        <button id="logout-btn">Logout</button>
+        <button id="flip-button">Flip Navio</button>
+        <button id="start-button" disabled>Start Game</button>
+    </div>
+    <div id="ship-card" class="ship-card">
+        <h3>Seus Navios</h3>
+        <div id="ships-container"></div>
+    </div>
+    <div id="boards">
+        <div id="player-board" class="game-board"></div>
+        <div id="computer-board" class="game-board"></div>
     </div>
 </div>
 
-<div id="boards">
-    <div id="player-board" class="game-board"></div>
-    <div id="computer-board" class="game-board"></div>
-</div>
-
+<script type="module" src="js/firebase-imports.js"></script>
+<script type="module" src="js/auth.js"></script>
 <script type="module" src="js/game.js"></script>
 </body>
 </html>
