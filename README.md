@@ -59,19 +59,6 @@ mvn test
 ```
 Os resultados aparecerão no console e em `target/surefire-reports/`.
 
-### Testes front-end (JavaScript)
-Se desejar rodar os testes do front-end (Jest):
-1. Instale o Jest globalmente ou no projeto:
-   ```
-   npm install --global jest
-   # ou
-   npm install --save-dev jest
-   ```
-2. Execute:
-   ```
-   npx jest
-   ```
-
 ## Como simular testes falhos ou ignorados
 
 ### Para forçar uma falha em um teste Java
@@ -106,14 +93,6 @@ public void testForcaErro() {
 }
 ```
 
-### Para simular falha em teste front-end (Jest)
-Altere um valor esperado em `api.test.js`:
-```js
-test('deve falhar propositalmente', () => {
-    expect(1 + 1).toBe(3);
-});
-```
-
 ## Integração Contínua (CI)
 
 Este projeto utiliza GitHub Actions para garantir a qualidade do código a cada commit e pull request. O workflow de CI:
@@ -137,9 +116,6 @@ O arquivo de configuração está em `.github/workflows/ci.yml`.
 
 ### Testes de serviço
 - **GameServiceImplTest**: Testa inicialização do jogo, posicionamento de navio do jogador (válido e inválido), ataques do jogador e do computador.
-
-### Testes front-end (Jest)
-- **api.test.js**: Testa a função `addHistory` para garantir que lida corretamente com respostas de sucesso e erro do back-end.
 
 ## Banco de Dados
 
