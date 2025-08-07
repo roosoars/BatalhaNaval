@@ -30,7 +30,7 @@ Este é um sistema completo de Batalha Naval, desenvolvido em Java (back-end) co
    java -cp target/BatalhaNaval-1.0-SNAPSHOT.jar battleship.application.MainApplication
    ```
 
-O servidor estará disponível em `http://localhost:4567`.
+O servidor estará disponível em `http://localhost:8080`.
 
 ## Como executar os testes
 
