@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test;
 import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 
-// Testes unitários para a classe Ship
 public class ShipTest {
     @Test
     public void testGetCoordinatesHorizontal() {

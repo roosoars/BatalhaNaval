@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-// Testes unitários para GameServiceImpl
 public class GameServiceImplTest {
     private GameServiceImpl service;
 

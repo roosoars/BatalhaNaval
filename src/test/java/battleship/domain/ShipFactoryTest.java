@@ -3,7 +3,6 @@ package battleship.domain;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-// Testes unitários para a classe ShipFactory
 public class ShipFactoryTest {
     @Test
     public void testCreateShip() {

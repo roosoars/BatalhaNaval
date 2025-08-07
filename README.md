@@ -236,5 +236,24 @@ Table Reports {
 - O uso do padrão noSQL permite adicionar coleções e campos sem grandes refatorações, garantindo flexibilidade e escalabilidade.
 - O modelo é totalmente compatível com o Firestore do Firebase, bastando criar as coleções e documentos conforme a estrutura acima.
 
+## Banco de Dados NoSQL e Arquitetura do Histórico
+
+O sistema utiliza um banco de dados NoSQL para armazenar o histórico das partidas. A seguir, um resumo da arquitetura e funcionamento dos principais componentes relacionados ao histórico:
+
+- **HistoryService**: Interface que define as operações de negócio para o histórico, como adicionar novos registros e buscar registros existentes. Sua implementação (HistoryServiceImpl) contém a lógica para persistência e validações desses dados no banco NoSQL.
+
+- **HistoryRequest**: DTO (Data Transfer Object) que encapsula os dados relacionados a uma operação de histórico. Esse objeto é utilizado para transportar as informações entre as camadas do sistema, por exemplo, do controlador para o serviço.
+
+- **HistoryController**: Componente responsável por expor endpoints HTTP (REST) para que clientes possam interagir com as operações do histórico. Ele recebe requisições, extrai os dados (mapeando para um HistoryRequest), chama os métodos do HistoryService e retorna respostas apropriadas.
+
+### Exemplo de fluxo
+1. O cliente faz uma requisição HTTP para adicionar ou buscar histórico.
+2. O `HistoryController` recebe a requisição e converte os dados recebidos em um `HistoryRequest`.
+3. O controller chama o método correspondente do `HistoryService`.
+4. O `HistoryServiceImpl` executa a lógica de negócio e persiste ou recupera os dados do banco NoSQL.
+5. A resposta é devolvida ao cliente.
+
+Essa arquitetura garante separação de responsabilidades, facilitando manutenção, testes e evolução do sistema.
+
 ## Licença
 Este projeto está sob a licença MIT.
