@@ -7,10 +7,28 @@
 Este é um sistema completo de Batalha Naval, desenvolvido em Java (back-end) com Spark Java, autenticação via Firebase, e front-end em JavaScript. O projeto suporta partidas contra o computador, histórico de partidas, autenticação de usuários e interface web moderna.
 
 ## Pré-requisitos
-- Java 17 ou superior
-- Maven 3.8+ instalado
-- (Opcional) Node.js e npm para testes front-end
-- Conta no Firebase (para autenticação)
+Para executar e desenvolver este projeto, você precisará dos seguintes pré-requisitos:
+
+- **Java 24** (compilação e execução)
+- **Maven 3.8+** (gerenciamento de dependências e build)
+- **Conta no Firebase** (para autenticação e banco de dados)
+- **Node.js** e **npm** (opcional, para testes front-end com Jest)
+
+> As versões de Java e Maven são baseadas no arquivo `pom.xml` e no workflow de CI. O projeto utiliza Java 24 (Temurin) e Maven para build e testes.
+
+## Ferramentas, Bibliotecas e Tecnologias Utilizadas
+
+- **Linguagem principal:** Java 24
+- **Gerenciador de dependências:** Maven
+- **Framework Web:** Spark Java 2.9.4
+- **Autenticação e Banco de Dados:** Firebase Admin SDK 9.1.1 (Firestore)
+- **Serialização JSON:** Gson 2.10.1
+- **Logging:** SLF4J Simple 1.7.36
+- **Testes Java:** JUnit Jupiter 5.9.2, Mockito 5.2.0
+- **Testes Front-end:** Jest (JavaScript, opcional)
+- **Front-end:** HTML, CSS, JavaScript (puro)
+
+> Todas as versões das bibliotecas Java estão especificadas no `pom.xml`. O front-end utiliza apenas recursos nativos do navegador e testes opcionais com Jest.
 
 ## Como executar o projeto
 
@@ -123,22 +141,124 @@ O arquivo de configuração está em `.github/workflows/ci.yml`.
 ### Testes front-end (Jest)
 - **api.test.js**: Testa a função `addHistory` para garantir que lida corretamente com respostas de sucesso e erro do back-end.
 
-## Estrutura do Projeto
-- `src/main/java/battleship/`: Código-fonte Java (domínio, serviços, controllers, filtros, exceções)
-- `src/main/resources/public/`: Front-end (HTML, CSS, JS)
-- `src/test/java/`: Testes unitários Java
-- `src/test/js/`: Testes unitários front-end (Jest)
-- `target/`: Saída de build e relatórios de testes
+## Banco de Dados
 
-## Observações
-- Os testes unitários estão localizados em `src/test/java/` (Java) e `src/test/js/` (JavaScript).
-- Para dúvidas ou problemas, consulte os arquivos de teste e os relatórios em `target/surefire-reports/`.
-- O arquivo `serviceAccountKey.json` do Firebase deve ser colocado em `src/main/resources/` (não versionado).
-- O projeto já está configurado para rodar em ambientes Windows, Mac e Linux.
-- Para autenticação, configure seu projeto Firebase e atualize as credenciais conforme necessário.
+O modelo de banco de dados noSQL do Batalha Naval Master foi desenhado para ser flexível, escalável e aderente aos requisitos do projeto, sendo totalmente compatível com o Firestore do Firebase. Cada coleção representa um conjunto de documentos, e os campos podem ser tipos primitivos, arrays ou referências por ID, seguindo o padrão do Firestore.
+
+### Estrutura e Implementação Atual
+
+- **Coleções já implementadas:**
+  - **users:** cada usuário é um documento nesta coleção.
+    - **games:** subcoleção dentro de cada usuário, onde são armazenados os históricos de partidas daquele usuário (cada partida é um documento com os dados do jogo, resultado, timestamp, etc).
+
+- **Coleções previstas para próximas sprints (ainda não implementadas):**
+  - **Games:** coleção global de partidas.
+  - **GameHistory:** histórico detalhado de partidas global.
+  - **Invitations:** convites e agendamento de partidas.
+  - **GameSettings:** preferências do usuário.
+  - **ChatMessages:** mensagens trocadas durante as partidas (chat in-game).
+  - **Friends:** gerenciamento de amizades e solicitações.
+  - **AISettings:** níveis e comportamentos da IA.
+  - **Reports:** relatórios e feedbacks de partidas.
+
+### Esquema Gráfico Completo (dbdiagram.io)
+
+O esquema abaixo representa **todas as coleções e relacionamentos previstos nos requisitos do projeto**, incluindo as já implementadas e as planejadas para o futuro. Use este modelo para documentação, discussão com o time e planejamento de evolução do banco. Ele pode ser importado no [dbdiagram.io](https://dbdiagram.io):
+
+```dbml
+Table Users {
+  userId string [pk]
+  username string
+  photoUrl string
+  winCount int
+  loseCount int
+  gamesPlayed int
+  friends string[]
+  lastLogin datetime
+}
+
+Table Games {
+  gameId string [pk]
+  player1Id string [ref: > Users.userId]
+  player2Id string [ref: > Users.userId]
+  player1MoveHistory string[]
+  player2MoveHistory string[]
+  status string
+  winnerId string [ref: > Users.userId]
+  boardSize int
+  turnCount int
+  gameStart datetime
+  gameEnd datetime
+  isOnline boolean
+  difficultyLevel string
+  player1ShipPositions string[]
+  player2ShipPositions string[]
+}
+
+Table GameHistory {
+  gameHistoryId string [pk]
+  gameId string [ref: > Games.gameId]
+  player1Id string [ref: > Users.userId]
+  player2Id string [ref: > Users.userId]
+  result string
+  moves string[]
+  finalBoard string
+  gameDate datetime
+}
+
+Table Invitations {
+  invitationId string [pk]
+  senderId string [ref: > Users.userId]
+  receiverId string [ref: > Users.userId]
+  status string
+  gameId string [ref: > Games.gameId]
+  inviteTime datetime
+  responseTime datetime
+}
+
+Table GameSettings {
+  userId string [pk, ref: > Users.userId]
+  defaultBoardSize int
+  preferredDifficulty string
+  autoShipPlacement boolean
+  notificationsEnabled boolean
+}
+
+Table ChatMessages {
+  messageId string [pk]
+  gameId string [ref: > Games.gameId]
+  senderId string [ref: > Users.userId]
+  receiverId string [ref: > Users.userId]
+  message string
+  timestamp datetime
+}
+
+Table Friends {
+  userId string [pk, ref: > Users.userId]
+  friendsList string[]
+  requestSent string[]
+  requestReceived string[]
+}
+
+Table AISettings {
+  aiLevel string [pk]
+  aiBehavior string
+}
+
+Table Reports {
+  reportId string [pk]
+  gameId string [ref: > Games.gameId]
+  report string
+  timestamp datetime
+}
+```
+
+> **Nota:** Apenas a coleção `users` (com subcoleção `games`) está implementada atualmente. As demais fazem parte do roadmap aprovado e serão implementadas conforme a evolução do projeto. Algumas tabelas/coleções decididas aqui ainda poderão ser alteradas ou até não estar presentes na versão final da entrega, dependendo das decisões de implementação e priorização ao longo do desenvolvimento. Além disso, a subcoleção `games` não está totalmente implementada até o momento desta apresentação, podendo sofrer mudanças ou expansões.
+
+### Observações Importantes
+- O modelo cobre as funcionalidades essenciais atuais (autenticação e histórico de partidas por usuário).
+- O uso do padrão noSQL permite adicionar coleções e campos sem grandes refatorações, garantindo flexibilidade e escalabilidade.
+- O modelo é totalmente compatível com o Firestore do Firebase, bastando criar as coleções e documentos conforme a estrutura acima.
 
 ## Licença
 Este projeto está sob a licença MIT.
-
----
-
