@@ -229,6 +229,8 @@ Table Reports {
 }
 ```
 
+<img src="bd.png" alt="DIAGRAMA BD">
+
 > **Nota:** Apenas a coleção `users` (com subcoleção `games`) está implementada atualmente. As demais fazem parte do roadmap aprovado e serão implementadas conforme a evolução do projeto. Algumas tabelas/coleções decididas aqui ainda poderão ser alteradas ou até não estar presentes na versão final da entrega, dependendo das decisões de implementação e priorização ao longo do desenvolvimento. Além disso, a subcoleção `games` não está totalmente implementada até o momento desta apresentação, podendo sofrer mudanças ou expansões.
 
 ### Observações Importantes
